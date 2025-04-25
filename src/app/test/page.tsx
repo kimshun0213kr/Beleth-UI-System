@@ -29,7 +29,7 @@ export default function Home() {
     { title: "Cube6", content: "Right 1x1", x: 1, y: 2, w: 1, h: 1 },
     { title: "Rect1", content: "Left 2x1", x: 0, y: 3, w: 2, h: 1 },
     { title: "Cube7", content: "Left 1x1", x: 0, y: 4, w: 1, h: 1 },
-    { title: "Cube8", content: "Rught 1x1", x: 1, y: 4, w: 1, h: 1 },
+    { title: "Cube8", content: "Right 1x1", x: 1, y: 4, w: 1, h: 1 },
     { title: "Big Cube1", content: "Left 2x2", x: 0, y: 5, w: 2, h: 2 },
     { title: "Cube9", content: "Left 1x1", x: 0, y: 7, w: 1, h: 1 },
     { title: "Cube10", content: "Right 1x1", x: 1, y: 7, w: 1, h: 1 },
