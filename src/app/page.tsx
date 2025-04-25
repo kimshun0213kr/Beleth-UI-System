@@ -1,95 +1,79 @@
+import { Box, Button, Center, Flex, HStack, VStack } from "@chakra-ui/react";
 import Image from "next/image";
-import styles from "./page.module.css";
+type blockTypes = {
+  title: string;
+  content: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
 
 export default function Home() {
+  const componentWidth = 240;
+  const components: blockTypes[] = [
+    { title: "ABC", content: "This is a test block.", x: 0, y: 0, w: 2, h: 1 },
+    { title: "ABC", content: "This is a test block.", x: 0, y: 1, w: 1, h: 1 },
+    { title: "ABC", content: "This is a test block.", x: 0, y: 2, w: 1, h: 2 },
+    { title: "ABC", content: "This is a test block.", x: 0, y: 2, w: 2, h: 2 },
+  ];
+  const colorArray = ["#ffc0cb", "#e0ffff", "#90ee90"];
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div>
+      <Center>
+        <VStack w="100%">
+          <Flex
+            wrap="wrap"
+            width="100%"
+            maxW={componentWidth * 2}
+            bgColor="#111111"
+            position="relative"
+            alignItems="flex-start"
+          >
+            {components.map((component, index) => {
+              const blockWidth = component.w * componentWidth - 10;
+              const blockHeight = component.h * componentWidth - 10;
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+              return (
+                <Box
+                  key={`${component.title}-${index}`}
+                  width={`${blockWidth}px`}
+                  height={`${blockHeight}px`}
+                  bgColor={colorArray[Math.floor(Math.random() * 3)]}
+                  borderRadius="3xl"
+                  p={4}
+                  m="1" // ちょっと余白
+                  color="black"
+                  boxSizing="border-box"
+                >
+                  <strong>{component.title}</strong>
+                  <p>{component.content}</p>
+                </Box>
+              );
+            })}
+          </Flex>
+        </VStack>
+      </Center>
+      <Button
+        position={"absolute"}
+        bottom={5}
+        right={5}
+        w="50px"
+        h="50px"
+        borderRadius={"2xl"}
+        // onClick={() =>
+        //   components.push({
+        //     title: "ABC",
+        //     content: "This is a test block.",
+        //     x: 0,
+        //     y: 2,
+        //     w: 2,
+        //     h: 2,
+        //   })
+        // }
+      >
+        A
+      </Button>
     </div>
   );
 }
