@@ -1,15 +1,32 @@
 "use client";
 
-import { Box, Button, Center, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Center,
+  Text,
+  Image,
+  VStack,
+  Link,
+  HStack,
+} from "@chakra-ui/react";
+import { LuExternalLink } from "react-icons/lu";
 import { useEffect, useState } from "react";
+import ArticleModal from "@/components/article";
+import { useAtom, useAtomValue } from "jotai";
+import { modalAtom, hoveredIndexAtom } from "@/lib/modalAtom";
 
 const UNIT = 240;
 const MAX_WIDTH = 480;
 const CUBE_MARGIN = 20;
 
-type blockTypes = {
+// 今後はこのtypeの中にcanvasmodeを追加して、そこで写真なのか外部リンクなのか埋め込みファイルなのか文字なのかを判別できるようにしたい
+export type blockTypes = {
   title: string;
-  content: string;
+  content: string | null;
+  image: string | null;
+  canvasmode: string;
+  link: string | null;
   x: number;
   y: number;
   w: number;
@@ -20,24 +37,166 @@ export default function Home() {
   const [windowWidth, setWindowWidth] = useState(1000);
   const [windowCubeWidth, setWindowCubeWidth] = useState(1000);
   const [cubeMargin, setCubeMargin] = useState(10);
+  const isModalOpen = useAtomValue(modalAtom);
   const components: blockTypes[] = [
-    { title: "Cube1", content: "Left 1x1", x: 0, y: 0, w: 1, h: 1 },
-    { title: "Cube2", content: "Right 1x1", x: 1, y: 0, w: 1, h: 1 },
-    { title: "Cube3", content: "Left 1x1", x: 0, y: 1, w: 1, h: 1 },
-    { title: "Cube4", content: "Right 1x1", x: 1, y: 1, w: 1, h: 1 },
-    { title: "Cube5", content: "Left 1x1", x: 0, y: 2, w: 1, h: 1 },
-    { title: "Cube6", content: "Right 1x1", x: 1, y: 2, w: 1, h: 1 },
-    { title: "Rect1", content: "Left 2x1", x: 0, y: 3, w: 2, h: 1 },
-    { title: "Cube7", content: "Left 1x1", x: 0, y: 4, w: 1, h: 1 },
-    { title: "Cube8", content: "Right 1x1", x: 1, y: 4, w: 1, h: 1 },
-    { title: "Big Cube1", content: "Left 2x2", x: 0, y: 5, w: 2, h: 2 },
-    { title: "Cube9", content: "Left 1x1", x: 0, y: 7, w: 1, h: 1 },
-    { title: "Cube10", content: "Right 1x1", x: 1, y: 7, w: 1, h: 1 },
-    { title: "Cube11", content: "Left 1x1", x: 0, y: 8, w: 1, h: 1 },
-    { title: "Cube12", content: "Right 1x1", x: 1, y: 8, w: 1, h: 1 },
+    {
+      title: "代々木公園",
+      content: "2025年4月9日撮影",
+      image: "/portfolio/D01.jpg",
+      canvasmode: "Image",
+      link: null,
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube2",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Link",
+      link: "https://github.com/kimshun0213kr",
+      x: 1,
+      y: 0,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "ベレト工務店ロゴ",
+      content: null,
+      image: null,
+      canvasmode: "File",
+      link: "/Beleth_Logo.png",
+      x: 0,
+      y: 1,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "記事を書いてみるよぉぉぉぉぉぉぉぉぉぉ",
+      content:
+        "こんにちは\nはじめましてかもね。\nこうやって記事も書けるんだよってことで最初の記事を書いてみようと思うよ。\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\nああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああああ\n",
+      image: "/Beleth_Logo.png",
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 1,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube5",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 2,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube6",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 2,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Rect1",
+      content: "Left 2x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 3,
+      w: 2,
+      h: 1,
+    },
+    {
+      title: "Cube7",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 4,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube8",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 4,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Big Cube1",
+      content: "Left 2x2",
+      image: "/portfolio/D02.jpg",
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 5,
+      w: 2,
+      h: 2,
+    },
+    {
+      title: "Cube9",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 7,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube10",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 7,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube11",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 8,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube12",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 8,
+      w: 1,
+      h: 1,
+    },
   ];
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useAtom(hoveredIndexAtom);
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
@@ -259,11 +418,191 @@ export default function Home() {
                 transition="all 0.3s ease"
                 zIndex={hoveredIndex === index ? 10 : 1}
                 onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseLeave={() => {
+                  isModalOpen ? null : setHoveredIndex(null);
+                }}
                 overflow="hidden"
+                shadow={"2xl"}
               >
-                <strong>{component.title}</strong>
-                <p>{component.content}</p>
+                {hoveredIndex == index ? (
+                  <>
+                    <Center w="100%" h="70%">
+                      <Box w="97%" h="97%" borderRadius={"2xl"}>
+                        {component.canvasmode == "Image" ? (
+                          <Image
+                            src={component.image!}
+                            h="100%"
+                            w="100%"
+                            objectFit={"cover"}
+                          />
+                        ) : (
+                          <Center w="100%" h="100%">
+                            <Image
+                              src={
+                                component.image
+                                  ? `${component.image}`
+                                  : `/${component.canvasmode}.png`
+                              }
+                              h={component.image ? "80%" : "60%"}
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                        )}
+                      </Box>
+                    </Center>
+                    <Center>
+                      {component.canvasmode == "Link" ? (
+                        <>
+                          {component.link ? (
+                            <>
+                              <VStack>
+                                <Text fontSize={"xl"} fontWeight={"bold"}>
+                                  {
+                                    component.link
+                                      .slice(component.link.indexOf("//") + 2)
+                                      .split("/")[0]
+                                  }
+                                </Text>
+                                {/* <Text>{component.link}</Text> */}
+                                <Link
+                                  href={component.link}
+                                  target="blank"
+                                  borderBottom={"1px solid black"}
+                                >
+                                  <HStack>
+                                    <Text>{component.link}</Text>
+                                    <LuExternalLink />
+                                  </HStack>
+                                </Link>
+                              </VStack>
+                            </>
+                          ) : (
+                            <Text>Linkの設定がありません。</Text>
+                          )}
+                        </>
+                      ) : null}
+                      {component.canvasmode == "File" ? (
+                        <>
+                          <Link
+                            href={component.link ? component.link : ""}
+                            target="blank"
+                            borderBottom={"1px solid black"}
+                            fontSize={"xl"}
+                            fontWeight={"bold"}
+                          >
+                            <HStack>
+                              <Text>{component.title}</Text>
+                              <LuExternalLink />
+                            </HStack>
+                          </Link>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "Article" ? (
+                        <>
+                          <VStack>
+                            <Text
+                              fontSize={"xl"}
+                              fontWeight={"bold"}
+                              borderBottom={0}
+                            >
+                              {component.title.length > 8
+                                ? component.title.slice(0, 7) + "..."
+                                : component.title}
+                            </Text>
+                            <Text borderTop={0}>
+                              {component.content!.replaceAll("\n", " ").length >
+                              20
+                                ? component.content
+                                    ?.replaceAll("\n", " ")
+                                    .slice(0, 19) + "..."
+                                : component.content?.replaceAll("\n", " ")}
+                            </Text>
+                            <ArticleModal
+                              data={component}
+                              modalWidth={
+                                Math.min(MAX_WIDTH, windowWidth) -
+                                Math.min(CUBE_MARGIN, cubeMargin)
+                              }
+                            />
+                          </VStack>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "Image" ? (
+                        <>
+                          <VStack>
+                            <Text fontSize={"xl"} fontWeight={"bold"}>
+                              {component.title}
+                            </Text>
+                            <Text>{component.content}</Text>
+                          </VStack>
+                        </>
+                      ) : null}
+                    </Center>
+                  </>
+                ) : (
+                  <Center w="100%" h="100%">
+                    <Box w="97%" h="97%" borderRadius={"2xl"}>
+                      {component.canvasmode == "Image" ? (
+                        <Center w="100%" h="100%">
+                          <Image
+                            src={component.image ? component.image : ""}
+                            h="100%"
+                            objectFit={"cover"}
+                          />
+                        </Center>
+                      ) : null}
+                      {component.canvasmode == "Link" ? (
+                        <>
+                          <Center w="100%" h="80%">
+                            <Image
+                              src="/Link.png"
+                              h="60%"
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                          <Center>
+                            {component.link ? (
+                              <>
+                                <Text fontSize={"xl"} fontWeight={"bold"}>
+                                  {
+                                    component.link
+                                      .slice(component.link.indexOf("//") + 2)
+                                      .split("/")[0]
+                                  }
+                                </Text>
+                              </>
+                            ) : (
+                              <Text>Linkの設定がありません。</Text>
+                            )}
+                          </Center>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "File" ||
+                      component.canvasmode == "Article" ? (
+                        <>
+                          <Center w="100%" h="80%">
+                            <Image
+                              src={
+                                component.image
+                                  ? component.image
+                                  : `/${component.canvasmode}.png`
+                              }
+                              h={component.image ? "80%" : "60%"}
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                          <Center>
+                            <Text fontSize={"xl"} fontWeight={"bold"}>
+                              {component.title.length > 8
+                                ? component.title.slice(0, 7) + "..."
+                                : component.title}
+                            </Text>
+                          </Center>
+                        </>
+                      ) : null}
+                    </Box>
+                  </Center>
+                )}
               </Box>
             );
           })}
