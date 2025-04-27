@@ -470,7 +470,11 @@ export default function Home() {
                                   borderBottom={"1px solid black"}
                                 >
                                   <HStack>
-                                    <Text>{component.link}</Text>
+                                    <Text>
+                                      {component.link
+                                        .replace("http://", "")
+                                        .replace("https://", "")}
+                                    </Text>
                                     <LuExternalLink />
                                   </HStack>
                                 </Link>
@@ -499,22 +503,35 @@ export default function Home() {
                       ) : null}
                       {component.canvasmode == "Article" ? (
                         <>
-                          <VStack>
+                          <VStack gap={0}>
                             <Text
                               fontSize={"xl"}
                               fontWeight={"bold"}
-                              borderBottom={0}
+                              marginBottom={0}
                             >
-                              {component.title.length > 8
-                                ? component.title.slice(0, 7) + "..."
+                              {component.title.length >
+                              (Math.min(UNIT, windowCubeWidth) / 30) *
+                                component.w
+                                ? component.title.slice(
+                                    0,
+                                    (Math.min(UNIT, windowCubeWidth) / 30) *
+                                      component.w -
+                                      1
+                                  ) + "..."
                                 : component.title}
                             </Text>
-                            <Text borderTop={0}>
+                            <Text marginTop={0}>
                               {component.content!.replaceAll("\n", " ").length >
-                              20
+                              (Math.min(UNIT, windowCubeWidth) / 12) *
+                                component.w
                                 ? component.content
                                     ?.replaceAll("\n", " ")
-                                    .slice(0, 19) + "..."
+                                    .slice(
+                                      0,
+                                      (Math.min(UNIT, windowCubeWidth) / 12) *
+                                        component.w -
+                                        1
+                                    ) + "..."
                                 : component.content?.replaceAll("\n", " ")}
                             </Text>
                             <ArticleModal
@@ -593,8 +610,15 @@ export default function Home() {
                           </Center>
                           <Center>
                             <Text fontSize={"xl"} fontWeight={"bold"}>
-                              {component.title.length > 8
-                                ? component.title.slice(0, 7) + "..."
+                              {component.title.length >
+                              (Math.min(UNIT, windowCubeWidth) / 30) *
+                                component.w
+                                ? component.title.slice(
+                                    0,
+                                    (Math.min(UNIT, windowCubeWidth) / 30) *
+                                      component.w -
+                                      1
+                                  ) + "..."
                                 : component.title}
                             </Text>
                           </Center>
