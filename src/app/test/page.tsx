@@ -1,15 +1,32 @@
 "use client";
 
-import { Box, Button, Center, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Center,
+  Text,
+  Image,
+  VStack,
+  Link,
+  HStack,
+} from "@chakra-ui/react";
+import { LuExternalLink } from "react-icons/lu";
 import { useEffect, useState } from "react";
+import ArticleModal from "@/components/article";
+import { useAtom, useAtomValue } from "jotai";
+import { modalAtom, hoveredIndexAtom } from "@/lib/modalAtom";
 
 const UNIT = 240;
 const MAX_WIDTH = 480;
 const CUBE_MARGIN = 20;
 
-type blockTypes = {
+// 今後はこのtypeの中にcanvasmodeを追加して、そこで写真なのか外部リンクなのか埋め込みファイルなのか文字なのかを判別できるようにしたい
+export type blockTypes = {
   title: string;
-  content: string;
+  content: string | null;
+  image: string | null;
+  canvasmode: string;
+  link: string | null;
   x: number;
   y: number;
   w: number;
@@ -20,24 +37,179 @@ export default function Home() {
   const [windowWidth, setWindowWidth] = useState(1000);
   const [windowCubeWidth, setWindowCubeWidth] = useState(1000);
   const [cubeMargin, setCubeMargin] = useState(10);
+  const isModalOpen = useAtomValue(modalAtom);
   const components: blockTypes[] = [
-    { title: "Cube1", content: "Left 1x1", x: 0, y: 0, w: 1, h: 1 },
-    { title: "Cube2", content: "Right 1x1", x: 1, y: 0, w: 1, h: 1 },
-    { title: "Cube3", content: "Left 1x1", x: 0, y: 1, w: 1, h: 1 },
-    { title: "Cube4", content: "Right 1x1", x: 1, y: 1, w: 1, h: 1 },
-    { title: "Cube5", content: "Left 1x1", x: 0, y: 2, w: 1, h: 1 },
-    { title: "Cube6", content: "Right 1x1", x: 1, y: 2, w: 1, h: 1 },
-    { title: "Rect1", content: "Left 2x1", x: 0, y: 3, w: 2, h: 1 },
-    { title: "Cube7", content: "Left 1x1", x: 0, y: 4, w: 1, h: 1 },
-    { title: "Cube8", content: "Right 1x1", x: 1, y: 4, w: 1, h: 1 },
-    { title: "Big Cube1", content: "Left 2x2", x: 0, y: 5, w: 2, h: 2 },
-    { title: "Cube9", content: "Left 1x1", x: 0, y: 7, w: 1, h: 1 },
-    { title: "Cube10", content: "Right 1x1", x: 1, y: 7, w: 1, h: 1 },
-    { title: "Cube11", content: "Left 1x1", x: 0, y: 8, w: 1, h: 1 },
-    { title: "Cube12", content: "Right 1x1", x: 1, y: 8, w: 1, h: 1 },
+    {
+      title: "代々木公園",
+      content: "2025年4月9日撮影",
+      image: "/portfolio/D01.jpg",
+      canvasmode: "Image",
+      link: null,
+      x: 0,
+      y: 0,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube2",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Link",
+      link: "https://github.com/kimshun0213kr",
+      x: 1,
+      y: 0,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "ベレト工務店ロゴ",
+      content: null,
+      image: null,
+      canvasmode: "File",
+      link: "/Beleth_Logo.png",
+      x: 0,
+      y: 1,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "記事を書いてみるよ",
+      content: `東京電機大学（とうきょう でんきだいがく、英語: Tokyo Denki University）は、東京都足立区千住旭町5に本部を置く日本の私立大学。1907年創立、1949年大学設置。大学の略称は電大、電機大、TDU。
+
+概観
+
+1907年（明治40年）に廣田精一と扇本眞吉が創設した電機学校を起源とする。1949年（昭和24年）、第二次世界大戦後の学制改革に伴い、電機工業専門学校（私立の旧制専門学校）が前身となって開学した大学である。2023年（令和5年）時点で、5学部5研究科を設置するなど理工系の大学として発展している。
+学生や大学内では「電大」という略称を用いることが多い。
+校歌の歌詞では「東京電大」、インターネット上のドメイン名には「dendai.ac.jp」を用いている。
+大学キャンパスは創立からおよそ100年の間、東京の神田地区に立地していたが、2012年（平成24年）に神田錦町から北千住駅前へ移転している。
+建学の精神と教育・研究理念
+| 実学尊重
+| 技術は人なり
+| —東京電機大学、建学の精神と教育・研究理念｜東京電機大学
+
+学風および特色
+工学の専門教育と実学尊重の教育を特色とする。産学官連携プロジェクトや、社会人向け講座、社会人学生の受け入れなど、企業とのコラボレーションも行っている。`,
+      image: "/Beleth_Logo.png",
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 1,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube5",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 2,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube6",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 2,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Rect1",
+      content: "Left 2x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 3,
+      w: 2,
+      h: 1,
+    },
+    {
+      title: "Cube7",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 4,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube8",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 4,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Big Cube1",
+      content: "Left 2x2",
+      image: "/portfolio/D02.jpg",
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 5,
+      w: 2,
+      h: 2,
+    },
+    {
+      title: "Cube9",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 7,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube10",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 7,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube11",
+      content: "Left 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 0,
+      y: 8,
+      w: 1,
+      h: 1,
+    },
+    {
+      title: "Cube12",
+      content: "Right 1x1",
+      image: null,
+      canvasmode: "Article",
+      link: null,
+      x: 1,
+      y: 8,
+      w: 1,
+      h: 1,
+    },
   ];
 
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [hoveredIndex, setHoveredIndex] = useAtom(hoveredIndexAtom);
 
   useEffect(() => {
     setWindowWidth(window.innerWidth);
@@ -259,11 +431,215 @@ export default function Home() {
                 transition="all 0.3s ease"
                 zIndex={hoveredIndex === index ? 10 : 1}
                 onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
+                onMouseLeave={() => {
+                  isModalOpen ? null : setHoveredIndex(null);
+                }}
                 overflow="hidden"
+                shadow={"2xl"}
               >
-                <strong>{component.title}</strong>
-                <p>{component.content}</p>
+                {hoveredIndex == index ? (
+                  <>
+                    <Center w="100%" h="70%">
+                      <Box w="97%" h="97%" borderRadius={"2xl"}>
+                        {component.canvasmode == "Image" ? (
+                          <Image
+                            src={component.image!}
+                            h="100%"
+                            w="100%"
+                            objectFit={"cover"}
+                          />
+                        ) : (
+                          <Center w="100%" h="100%">
+                            <Image
+                              src={
+                                component.image
+                                  ? `${component.image}`
+                                  : `/${component.canvasmode}.png`
+                              }
+                              h={component.image ? "80%" : "60%"}
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                        )}
+                      </Box>
+                    </Center>
+                    <Center>
+                      {component.canvasmode == "Link" ? (
+                        <>
+                          {component.link ? (
+                            <>
+                              <VStack>
+                                <Text fontSize={"xl"} fontWeight={"bold"}>
+                                  {
+                                    component.link
+                                      .slice(component.link.indexOf("//") + 2)
+                                      .split("/")[0]
+                                  }
+                                </Text>
+                                {/* <Text>{component.link}</Text> */}
+                                <Link
+                                  href={component.link}
+                                  target="blank"
+                                  borderBottom={"1px solid black"}
+                                >
+                                  <HStack>
+                                    <Text>
+                                      {component.link
+                                        .replace("http://", "")
+                                        .replace("https://", "")}
+                                    </Text>
+                                    <LuExternalLink />
+                                  </HStack>
+                                </Link>
+                              </VStack>
+                            </>
+                          ) : (
+                            <Text>Linkの設定がありません。</Text>
+                          )}
+                        </>
+                      ) : null}
+                      {component.canvasmode == "File" ? (
+                        <>
+                          <Link
+                            href={component.link ? component.link : ""}
+                            target="blank"
+                            borderBottom={"1px solid black"}
+                            fontSize={"xl"}
+                            fontWeight={"bold"}
+                          >
+                            <HStack>
+                              <Text>{component.title}</Text>
+                              <LuExternalLink />
+                            </HStack>
+                          </Link>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "Article" ? (
+                        <>
+                          <VStack gap={0}>
+                            <Text
+                              fontSize={"xl"}
+                              fontWeight={"bold"}
+                              marginBottom={0}
+                            >
+                              {component.title.length >
+                              (Math.min(UNIT, windowCubeWidth) / 30) *
+                                component.w
+                                ? component.title.slice(
+                                    0,
+                                    (Math.min(UNIT, windowCubeWidth) / 30) *
+                                      component.w -
+                                      1
+                                  ) + "..."
+                                : component.title}
+                            </Text>
+                            <Text marginTop={0}>
+                              {component.content!.replaceAll("\n", " ").length >
+                              (Math.min(UNIT, windowCubeWidth) / 12) *
+                                component.w
+                                ? component.content
+                                    ?.replaceAll("\n", " ")
+                                    .slice(
+                                      0,
+                                      (Math.min(UNIT, windowCubeWidth) / 12) *
+                                        component.w -
+                                        1
+                                    ) + "..."
+                                : component.content?.replaceAll("\n", " ")}
+                            </Text>
+                            <ArticleModal
+                              data={component}
+                              modalWidth={
+                                Math.min(MAX_WIDTH, windowWidth) -
+                                Math.min(CUBE_MARGIN, cubeMargin)
+                              }
+                            />
+                          </VStack>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "Image" ? (
+                        <>
+                          <VStack>
+                            <Text fontSize={"xl"} fontWeight={"bold"}>
+                              {component.title}
+                            </Text>
+                            <Text>{component.content}</Text>
+                          </VStack>
+                        </>
+                      ) : null}
+                    </Center>
+                  </>
+                ) : (
+                  <Center w="100%" h="100%">
+                    <Box w="97%" h="97%" borderRadius={"2xl"}>
+                      {component.canvasmode == "Image" ? (
+                        <Center w="100%" h="100%">
+                          <Image
+                            src={component.image ? component.image : ""}
+                            h="100%"
+                            objectFit={"cover"}
+                          />
+                        </Center>
+                      ) : null}
+                      {component.canvasmode == "Link" ? (
+                        <>
+                          <Center w="100%" h="80%">
+                            <Image
+                              src="/Link.png"
+                              h="60%"
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                          <Center>
+                            {component.link ? (
+                              <>
+                                <Text fontSize={"xl"} fontWeight={"bold"}>
+                                  {
+                                    component.link
+                                      .slice(component.link.indexOf("//") + 2)
+                                      .split("/")[0]
+                                  }
+                                </Text>
+                              </>
+                            ) : (
+                              <Text>Linkの設定がありません。</Text>
+                            )}
+                          </Center>
+                        </>
+                      ) : null}
+                      {component.canvasmode == "File" ||
+                      component.canvasmode == "Article" ? (
+                        <>
+                          <Center w="100%" h="80%">
+                            <Image
+                              src={
+                                component.image
+                                  ? component.image
+                                  : `/${component.canvasmode}.png`
+                              }
+                              h={component.image ? "80%" : "60%"}
+                              objectFit={"cover"}
+                            />
+                          </Center>
+                          <Center>
+                            <Text fontSize={"xl"} fontWeight={"bold"}>
+                              {component.title.length >
+                              (Math.min(UNIT, windowCubeWidth) / 30) *
+                                component.w
+                                ? component.title.slice(
+                                    0,
+                                    (Math.min(UNIT, windowCubeWidth) / 30) *
+                                      component.w -
+                                      1
+                                  ) + "..."
+                                : component.title}
+                            </Text>
+                          </Center>
+                        </>
+                      ) : null}
+                    </Box>
+                  </Center>
+                )}
               </Box>
             );
           })}
