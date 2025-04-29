@@ -9,7 +9,8 @@ import {
   Center,
 } from "@chakra-ui/react";
 import { useAtom, useSetAtom } from "jotai";
-import { hoveredIndexAtom, modalAtom } from "@/lib/modalAtom";
+import { modalAtom } from "@/lib/jotai/modalAtom";
+import { hoveredIndexAtom } from "@/lib/jotai/hoveredIndexAtom";
 
 export default function ArticleModal({
   data,
@@ -37,7 +38,9 @@ export default function ArticleModal({
         onOpenChange={(e) => modalJotai(e.open)}
       >
         <Dialog.Trigger asChild>
-          <Button size="xs">この記事を読む</Button>
+          <Button bgColor={"pink.500"} variant={"subtle"} size="xs">
+            この記事を読む
+          </Button>
         </Dialog.Trigger>
         <Portal>
           <Dialog.Backdrop />
