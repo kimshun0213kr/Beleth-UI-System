@@ -39,7 +39,7 @@ export default function ArticleModal({
       >
         <Dialog.Trigger asChild>
           <Button bgColor={"pink.500"} variant={"subtle"} size="xs">
-            この記事を読む
+            この{data.canvasmode == "Article" ? "記事を読む" : "写真を見る"}
           </Button>
         </Dialog.Trigger>
         <Portal>
