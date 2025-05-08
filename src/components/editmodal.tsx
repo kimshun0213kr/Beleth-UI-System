@@ -59,19 +59,22 @@ export default function ArticleEditModal({
   const [inputImage, setInputImage] = useState<Blob>();
   const [alertVisible, setAlertVisible] = useState(false);
 
+  const modalJotai = (isOpen: boolean) => {
+    onOpen(isOpen);
+    if (!isOpen) {
+      setHoveredIndex(null);
+    }
+  };
+
   const canvasModes = createListCollection({
     items: ["Article", "File", "Image", "Link"],
   });
 
   const setFile = async (file: File) => {
-    console.log(file);
-    console.log(file.name.split("."));
-    console.log(file.name.split(".")[file.name.split(".").length - 1]);
     setInputFile(file);
     if (!title) {
       setTitle(file.name);
     }
-    console.log(data);
   };
 
   const getOGP = async () => {
@@ -94,7 +97,6 @@ export default function ArticleEditModal({
   };
 
   const updateCanvas = async () => {
-    console.log(data.id, maxid);
     if (mode == "Link") {
       getOGP().then(async (imageLink) => {
         if (maxid < data.id) {
@@ -153,9 +155,8 @@ export default function ArticleEditModal({
           console.error(error);
           throw error;
         }
-        console.log(fileInputData);
+
         if (maxid < data.id) {
-          console.log("ADD");
           const { data: updateData, error: updateError } = await supabase
             .from("content")
             .insert({
@@ -190,11 +191,10 @@ export default function ArticleEditModal({
             console.error("error:", updateError);
             throw updateError;
           }
-          console.log("UPDATEDATA:", updateData);
+
           modalJotai(false);
           return updateData;
         } else {
-          console.log("UPDATE");
           const { data: updateData, error: updateError } = await supabase
             .from("content")
             .update({
@@ -222,13 +222,12 @@ export default function ArticleEditModal({
             console.error("error:", updateError);
             throw updateError;
           }
-          console.log("UPDATEDATA:", updateData);
+
           modalJotai(false);
           return updateData;
         }
       } else {
         if (maxid < data.id) {
-          console.log("ADD");
           const { data: updateData, error: updateError } = await supabase
             .from("content")
             .insert({
@@ -246,11 +245,10 @@ export default function ArticleEditModal({
             console.error("error:", updateError);
             throw updateError;
           }
-          console.log("UPDATEDATA:", updateData);
+
           modalJotai(false);
           return updateData;
         } else {
-          console.log("UPDATE");
           const { data: updateData, error: updateError } = await supabase
             .from("content")
             .update({
@@ -263,7 +261,7 @@ export default function ArticleEditModal({
             console.error("error:", updateError);
             throw updateError;
           }
-          console.log("UPDATEDATA:", updateData);
+
           modalJotai(false);
           return updateData;
         }
@@ -271,8 +269,24 @@ export default function ArticleEditModal({
     }
   };
 
+  const closely = async (closelyData: blockTypes) => {
+    // const closelyX = {closelyData.x == 0?1:0}
+    let closelyX = 0;
+    let closelyY = closelyData.y;
+    if (closelyData.x == 0) {
+      closelyX = 1;
+      closelyY -= 1;
+    }
+
+    await supabase
+      .from("content")
+      .update({ x: closelyX, y: closelyY })
+      .eq("id", closelyData.id);
+  };
+
   const deleteFunction = async () => {
-    console.log("delete func.");
+    let firstW2 = false;
+
     const coord = [data.x, data.y];
     const w = data.w;
     if (w == 2) {
@@ -280,20 +294,18 @@ export default function ArticleEditModal({
         .from("content")
         .select("*")
         .gt("y", coord[1]);
-      console.log(data, data.id);
+
       await supabase
         .from("content")
         .delete()
         .eq("id", data.id)
         .then(async (deleteResult) => {
-          console.log("result:", deleteResult);
           if (
             data.image &&
             data.image.startsWith(
               process.env.NEXT_PUBLIC_SUPABASE_URL as string
             )
           ) {
-            console.log(data.image.slice(71));
             await supabase.storage.from("file").remove([data.image.slice(71)]);
           }
           if (deleteDatas) {
@@ -306,38 +318,93 @@ export default function ArticleEditModal({
           }
         });
       const { data: canvas } = await supabase.from("content").select("*");
-      console.log(canvas);
     } else {
       // wが1のときには、w=2のコンポーネントが来るまで、自身よりも後のコンポーネントを前にずらしていく
-      console.log(data, data.id);
-      await supabase
-        .from("content")
-        .delete()
-        .eq("id", data.id)
-        .then(async (deleteResult) => {
-          console.log("result:", deleteResult);
-          if (
-            data.image &&
-            data.image.startsWith(
-              process.env.NEXT_PUBLIC_SUPABASE_URL as string
-            )
-          ) {
-            console.log(data.image.slice(71));
-            await supabase.storage.from("file").remove([data.image.slice(71)]);
-          }
-        });
-      const { data: canvas } = await supabase.from("content").select("*");
-      console.log(canvas);
+      if (data.x == 1) {
+        const { data: deleteDatas, error } = await supabase
+          .from("content")
+          .select("*")
+          .neq("id", data.id)
+          .gt("y", coord[1])
+          .order("y", { ascending: true })
+          .order("x", { ascending: true });
+
+        await supabase
+          .from("content")
+          .delete()
+          .eq("id", data.id)
+          .then(async (deleteResult) => {
+            if (deleteDatas) {
+              deleteDatas.map((deleteData) => {
+                if (deleteData.w == 2) {
+                  firstW2 = true;
+                  return;
+                }
+                if (firstW2) {
+                  return;
+                } else {
+                  closely(deleteData);
+                }
+              });
+            }
+
+            if (
+              data.image &&
+              data.image.startsWith(
+                process.env.NEXT_PUBLIC_SUPABASE_URL as string
+              )
+            ) {
+              await supabase.storage
+                .from("file")
+                .remove([data.image.slice(71)]);
+            }
+          });
+        const { data: canvas } = await supabase.from("content").select("*");
+      } else {
+        const { data: deleteDatas, error } = await supabase
+          .from("content")
+          .select("*")
+          .neq("id", data.id)
+          .gte("y", coord[1])
+          .order("y", { ascending: true })
+          .order("x", { ascending: true });
+
+        await supabase
+          .from("content")
+          .delete()
+          .eq("id", data.id)
+          .then(async (deleteResult) => {
+            if (deleteDatas) {
+              deleteDatas.map((deleteData) => {
+                if (deleteData.w == 2) {
+                  firstW2 = true;
+                  return;
+                }
+                if (firstW2) {
+                  return;
+                } else {
+                  closely(deleteData);
+                }
+              });
+            }
+
+            if (
+              data.image &&
+              data.image.startsWith(
+                process.env.NEXT_PUBLIC_SUPABASE_URL as string
+              )
+            ) {
+              await supabase.storage
+                .from("file")
+                .remove([data.image.slice(71)]);
+            }
+          });
+        const { data: canvas } = await supabase.from("content").select("*");
+      }
     }
     modalJotai(false);
   };
 
-  const modalJotai = (isOpen: boolean) => {
-    onOpen(isOpen);
-    if (!isOpen) {
-      setHoveredIndex(null);
-    }
-  };
   const componentSwitch = () => {
     switch (mode) {
       case "Link":
@@ -489,7 +556,6 @@ export default function ArticleEditModal({
                             <NativeSelect.Field
                               defaultValue={data.canvasmode}
                               onChange={(e) => {
-                                console.log(e.currentTarget.value);
                                 setMode(e.currentTarget.value);
                               }}
                             >
