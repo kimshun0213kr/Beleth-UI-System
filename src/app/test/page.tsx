@@ -256,6 +256,34 @@ export default function Home() {
     },
   ];
 
+  const closely = (emptyArray: number[][]) => {
+    if (emptyArray.length != 0) {
+      let tmpY = emptyArray[0][1];
+      emptyArray.map(async (tmpEmptyBlock, index) => {
+        if (index != 0) {
+          if (tmpY == tmpEmptyBlock[1]) {
+            const { data, error } = await supabase
+              .from("content")
+              .select("*")
+              .gte("y", tmpY)
+              .order("y", { ascending: true })
+              .order("x", { ascending: true });
+            if (data) {
+              data.map(async (updateData: blockTypes) => {
+                const updateY = updateData.y - 1;
+                await supabase
+                  .from("content")
+                  .update({ y: updateY })
+                  .eq("id", updateData.id);
+              });
+            }
+          }
+        }
+        tmpY = tmpEmptyBlock[1];
+      });
+    }
+  };
+
   const getData = async () => {
     const { data, error } = await supabase
       .from("content")
@@ -270,7 +298,6 @@ export default function Home() {
     setWindowCubeWidth(window.innerWidth / 2);
     setCubeMargin(window.innerWidth / 24);
     getData().then((componentData) => {
-      console.log(componentData);
       setComponents(componentData);
     });
     // setIsLogin(true);
@@ -281,7 +308,6 @@ export default function Home() {
         { event: "*", schema: "public", table: "content" },
         (payload: any) => {
           getData().then((componentData) => {
-            console.log(componentData);
             setComponents(componentData);
           });
         }
@@ -295,8 +321,6 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    console.log("Change components effect.");
-    console.log();
     let tmpArray: number[][] = [];
     let tmpMax = 0;
     let tmpMaxID = 0;
@@ -314,7 +338,6 @@ export default function Home() {
           tmpMaxID = components[i].id;
         }
       }
-      console.log(tmpMax);
       setMaxHeight(tmpMax);
       for (let i = 0; i < tmpMax / Math.min(UNIT, windowCubeWidth); i++) {
         for (let j = 0; j < 2; j++) {
@@ -331,17 +354,12 @@ export default function Home() {
         }
       });
       setEmpty(tmpArray);
-      if (empty) {
-        console.log(true, empty);
-      } else {
-        console.log(false, empty);
-      }
+      closely(tmpArray);
     }
     if (!onAddAction) {
       setMaxId(tmpMaxID);
     }
     setOnAddAction(false);
-    console.log("maxid:", maxid);
   }, [components]);
 
   if (components) {
@@ -910,7 +928,6 @@ export default function Home() {
                                 setMaxHeight(
                                   maxHeight + Math.min(UNIT, windowCubeWidth)
                                 );
-                                console.log(maxHeight);
                               } else {
                                 setComponents([
                                   ...components,
