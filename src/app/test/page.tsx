@@ -5,38 +5,28 @@ import {
   Button,
   Center,
   Text,
-  Image,
   VStack,
-  Link,
-  HStack,
   Heading,
-  Float,
-  Circle,
   Alert,
   Spinner,
   Input,
 } from "@chakra-ui/react";
-import {
-  LuExternalLink,
-  LuCircleX,
-  LuMove,
-  LuPlus,
-  LuEllipsis,
-} from "react-icons/lu";
 import { useEffect, useState } from "react";
-import ArticleModal from "@/components/article";
 import { useAtom, useAtomValue } from "jotai";
 import { modalAtom } from "@/lib/jotai/modalAtom";
 import { hoveredIndexAtom } from "@/lib/jotai/hoveredIndexAtom";
 import { alertVisibleAtom } from "@/lib/jotai/alertVisible";
-import ArticleEditModal from "@/components/editmodal";
 import { supabase } from "@/lib/supabase";
+import { maxHeightAtom } from "@/lib/jotai/maxHeightAtom";
+import Canvas from "@/components/canvas/main";
+import AddButton from "@/components/addButton";
+import { componentAtom } from "@/lib/jotai/components";
+import { addActionAtom } from "@/lib/jotai/addAction";
 
 const UNIT = 240;
 const MAX_WIDTH = 480;
 const CUBE_MARGIN = 20;
 
-// 今後はこのtypeの中にcanvasmodeを追加して、そこで写真なのか外部リンクなのか埋め込みファイルなのか文字なのかを判別できるようにしたい
 export type blockTypes = {
   id: number;
   title: string;
@@ -55,206 +45,19 @@ export default function Home() {
   const [windowCubeWidth, setWindowCubeWidth] = useState(1000);
   const [cubeMargin, setCubeMargin] = useState(10);
   const isModalOpen = useAtomValue(modalAtom);
-  const [components, setComponents] = useState<blockTypes[]>();
+  const [components, setComponents] = useAtom(componentAtom);
 
   const [hoveredIndex, setHoveredIndex] = useAtom(hoveredIndexAtom);
 
   const [empty, setEmpty] = useState<number[][]>();
-  const [maxHeight, setMaxHeight] = useState(0);
+  const [maxHeight, setMaxHeight] = useAtom(maxHeightAtom);
   const [isLogin, setIsLogin] = useState(false);
 
-  const [onAddAction, setOnAddAction] = useState(false);
+  const [onAddAction, setOnAddAction] = useAtom(addActionAtom);
   const [maxid, setMaxId] = useState(0);
   const [tmpPass, setTmpPass] = useState("");
 
   const alertVisible = useAtomValue(alertVisibleAtom);
-
-  // let maxid = 0;
-
-  const tmpComponent: blockTypes[] = [
-    {
-      id: 1,
-      title: "代々木公園",
-      content: "2025年4月9日撮影",
-      image: "/portfolio/D01.jpg",
-      canvasmode: "Image",
-      link: null,
-      x: 0,
-      y: 0,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 2,
-      title: "",
-      content: null,
-      image: null,
-      canvasmode: "Link",
-      link: "https://github.com/kimshun0213kr",
-      x: 1,
-      y: 0,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 3,
-      title: "ベレト工務店ロゴ",
-      content: null,
-      image: null,
-      canvasmode: "File",
-      link: "/Beleth_Logo.png",
-      x: 0,
-      y: 1,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 4,
-      title: "記事を書いてみるよ",
-      content: `東京電機大学（とうきょう でんきだいがく、英語: Tokyo Denki University）は、東京都足立区千住旭町5に本部を置く日本の私立大学。1907年創立、1949年大学設置。大学の略称は電大、電機大、TDU。
-
-概観
-
-1907年（明治40年）に廣田精一と扇本眞吉が創設した電機学校を起源とする。1949年（昭和24年）、第二次世界大戦後の学制改革に伴い、電機工業専門学校（私立の旧制専門学校）が前身となって開学した大学である。2023年（令和5年）時点で、5学部5研究科を設置するなど理工系の大学として発展している。
-学生や大学内では「電大」という略称を用いることが多い。
-校歌の歌詞では「東京電大」、インターネット上のドメイン名には「dendai.ac.jp」を用いている。
-大学キャンパスは創立からおよそ100年の間、東京の神田地区に立地していたが、2012年（平成24年）に神田錦町から北千住駅前へ移転している。
-建学の精神と教育・研究理念
-| 実学尊重
-| 技術は人なり
-| —東京電機大学、建学の精神と教育・研究理念｜東京電機大学
-
-学風および特色
-工学の専門教育と実学尊重の教育を特色とする。産学官連携プロジェクトや、社会人向け講座、社会人学生の受け入れなど、企業とのコラボレーションも行っている。`,
-      image: "/Beleth_Logo.png",
-      canvasmode: "Article",
-      link: null,
-      x: 1,
-      y: 1,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 5,
-      title: "Cube5",
-      content: "Left 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 2,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 6,
-      title: "Cube6",
-      content: "Right 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 1,
-      y: 2,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 7,
-      title: "Rect1",
-      content: "Left 2x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 3,
-      w: 2,
-      h: 1,
-    },
-    {
-      id: 8,
-      title: "Cube7",
-      content: "Left 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 4,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 9,
-      title: "Cube8",
-      content: "Right 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 1,
-      y: 4,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 10,
-      title: "Big Cube1",
-      content: "Left 2x2",
-      image: "/portfolio/D02.jpg",
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 5,
-      w: 2,
-      h: 2,
-    },
-    {
-      id: 11,
-      title: "Cube9",
-      content: "Left 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 7,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 12,
-      title: "Cube10",
-      content: "Right 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 1,
-      y: 7,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 13,
-      title: "Cube11",
-      content: "Left 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 0,
-      y: 8,
-      w: 1,
-      h: 1,
-    },
-    {
-      id: 14,
-      title: "Cube12",
-      content: "Right 1x1",
-      image: null,
-      canvasmode: "Article",
-      link: null,
-      x: 1,
-      y: 8,
-      w: 1,
-      h: 1,
-    },
-  ];
 
   const closely = (emptyArray: number[][]) => {
     if (emptyArray.length != 0) {
@@ -465,15 +268,6 @@ export default function Home() {
                       hovered.h == 2 &&
                       hovered.w == 2;
 
-                    const rightComponent = components.find(
-                      (c) => c.x === hovered.x + hovered.w && c.y === hovered.y
-                    );
-                    const belowComponent = components.find(
-                      (c) =>
-                        c.y === hovered.y + hovered.h &&
-                        (c.x === hovered.x || (hovered.w === 1 && c.w === 2))
-                    );
-
                     // Case1
                     if (hovered.w == 1 && hovered.h == 1 && hovered.x == 0) {
                       if (isRight) {
@@ -589,468 +383,32 @@ export default function Home() {
                 }
 
                 return (
-                  <Box
-                    key={`${component.title}-${index}`}
-                    position="absolute"
-                    left={`${left}px`}
-                    top={`${top}px`}
-                    maxWidth={
-                      Math.min(MAX_WIDTH, windowWidth) -
-                      Math.min(CUBE_MARGIN, cubeMargin)
-                    }
-                    width={`${width - Math.min(CUBE_MARGIN, cubeMargin)}px`}
-                    height={`${height - Math.min(CUBE_MARGIN, cubeMargin)}px`}
-                    margin={CUBE_MARGIN / 10}
+                  <Canvas
+                    component={component}
+                    index={index}
+                    left={left}
+                    top={top}
+                    width={width}
+                    height={height}
+                    MAX_WIDTH={MAX_WIDTH}
+                    CUBE_MARGIN={CUBE_MARGIN}
+                    UNIT={UNIT}
+                    windowWidth={windowWidth}
+                    windowCubeWidth={windowCubeWidth}
+                    cubeMargin={cubeMargin}
                     bgColor={bgColor}
-                    borderRadius="4xl"
-                    p={3}
-                    transition="all 0.3s ease"
-                    zIndex={hoveredIndex === index ? 10 : 1}
-                    onMouseEnter={() => {
-                      setHoveredIndex(index);
-                      if (
-                        component.y + 1 ==
-                        maxHeight / Math.min(UNIT, windowCubeWidth)
-                      ) {
-                        setMaxHeight(
-                          maxHeight +
-                            component.h * (Math.min(UNIT, windowCubeWidth) / 2)
-                        );
-                      }
-                    }}
-                    onMouseLeave={() => {
-                      if (!isModalOpen) {
-                        setHoveredIndex(null);
-                      }
-                      if (
-                        component.y + 1 ==
-                        (maxHeight -
-                          component.h * (Math.min(UNIT, windowCubeWidth) / 2)) /
-                          Math.min(UNIT, windowCubeWidth)
-                      ) {
-                        setMaxHeight(
-                          maxHeight -
-                            component.h * (Math.min(UNIT, windowCubeWidth) / 2)
-                        );
-                      }
-                    }}
-                    overflow="hidden"
-                    shadow={"2xl"}
-                    shadowColor={"blue.500"}
-                  >
-                    <Box position={"relative"} w="100%" h="100%">
-                      {hoveredIndex == index ? (
-                        // ホバーされている時の表示
-                        <>
-                          {isLogin ? (
-                            <ArticleEditModal
-                              data={component}
-                              modalWidth={Math.min(UNIT, windowCubeWidth)}
-                              maxid={maxid}
-                            />
-                          ) : null}
-                          <Center w="100%" h="70%">
-                            <Box w="97%" h="97%" borderRadius={"2xl"}>
-                              {component.canvasmode == "Image" ? (
-                                <Image
-                                  src={component.image!}
-                                  h="100%"
-                                  w="100%"
-                                  objectFit={"cover"}
-                                />
-                              ) : (
-                                <Center w="100%" h="100%">
-                                  <Image
-                                    src={
-                                      component.image
-                                        ? `${component.image}`
-                                        : `/${component.canvasmode}.png`
-                                    }
-                                    h={component.image ? "80%" : "60%"}
-                                    objectFit={"cover"}
-                                  />
-                                </Center>
-                              )}
-                            </Box>
-                          </Center>
-                          <Center>
-                            {component.canvasmode == "Link" ? (
-                              <>
-                                {component.link ? (
-                                  <>
-                                    <VStack>
-                                      <Text fontSize={"xl"} fontWeight={"bold"}>
-                                        {component.title == ""
-                                          ? component.link
-                                              .slice(
-                                                component.link.indexOf("//") + 2
-                                              )
-                                              .split("/")[0]
-                                          : component.title}
-                                      </Text>
-                                      <Link
-                                        href={component.link}
-                                        target="blank"
-                                        borderBottom={"1px solid black"}
-                                      >
-                                        <HStack>
-                                          <Text>
-                                            {component.link
-                                              .replace("http://", "")
-                                              .replace("https://", "")}
-                                          </Text>
-                                          <LuExternalLink />
-                                        </HStack>
-                                      </Link>
-                                    </VStack>
-                                  </>
-                                ) : (
-                                  <Text>Linkの設定がありません。</Text>
-                                )}
-                              </>
-                            ) : null}
-                            {component.canvasmode == "File" ? (
-                              <>
-                                <Link
-                                  href={component.link ? component.link : ""}
-                                  target="blank"
-                                  borderBottom={"1px solid black"}
-                                  fontSize={"xl"}
-                                  fontWeight={"bold"}
-                                >
-                                  <HStack>
-                                    <Text>{component.title}</Text>
-                                    <LuExternalLink />
-                                  </HStack>
-                                </Link>
-                              </>
-                            ) : null}
-                            {component.canvasmode == "Article" ? (
-                              <>
-                                <VStack gap={0}>
-                                  <Text
-                                    fontSize={"xl"}
-                                    fontWeight={"bold"}
-                                    marginBottom={0}
-                                  >
-                                    {component.title.length >
-                                    (Math.min(UNIT, windowCubeWidth) / 30) *
-                                      component.w
-                                      ? component.title.slice(
-                                          0,
-                                          (Math.min(UNIT, windowCubeWidth) /
-                                            30) *
-                                            component.w -
-                                            1
-                                        ) + "..."
-                                      : component.title}
-                                  </Text>
-                                  <Text marginTop={0}>
-                                    {component.content ? (
-                                      <>
-                                        {component.content!.replaceAll(
-                                          "\n",
-                                          " "
-                                        ).length >
-                                        (Math.min(UNIT, windowCubeWidth) / 12) *
-                                          component.w *
-                                          component.h
-                                          ? component.content
-                                              ?.replaceAll("\n", " ")
-                                              .slice(
-                                                0,
-                                                (Math.min(
-                                                  UNIT,
-                                                  windowCubeWidth
-                                                ) /
-                                                  12) *
-                                                  component.w *
-                                                  component.h -
-                                                  1
-                                              ) + "..."
-                                          : component.content?.replaceAll(
-                                              "\n",
-                                              " "
-                                            )}
-                                      </>
-                                    ) : null}
-                                  </Text>
-                                  <ArticleModal
-                                    data={component}
-                                    modalWidth={
-                                      Math.min(MAX_WIDTH, windowWidth) -
-                                      Math.min(CUBE_MARGIN, cubeMargin)
-                                    }
-                                  />
-                                </VStack>
-                              </>
-                            ) : null}
-                            {component.canvasmode == "Image" ? (
-                              <>
-                                <VStack>
-                                  <Text fontSize={"xl"} fontWeight={"bold"}>
-                                    {component.title}
-                                  </Text>
-                                  <Text>{component.content}</Text>
-
-                                  <ArticleModal
-                                    data={component}
-                                    modalWidth={
-                                      Math.min(MAX_WIDTH, windowWidth) -
-                                      Math.min(CUBE_MARGIN, cubeMargin)
-                                    }
-                                  />
-                                </VStack>
-                              </>
-                            ) : null}
-                          </Center>
-                        </>
-                      ) : (
-                        // ホバーされていない時の表示
-                        <Center w="100%" h="100%">
-                          <Box w="97%" h="97%" borderRadius={"2xl"}>
-                            {component.canvasmode == "Image" ? (
-                              <Center w="100%" h="100%">
-                                <Image
-                                  src={
-                                    component.image
-                                      ? component.image
-                                      : "/Article.png"
-                                  }
-                                  h="100%"
-                                  objectFit={"cover"}
-                                />
-                              </Center>
-                            ) : null}
-                            {component.canvasmode == "Link" ? (
-                              <>
-                                <Center w="100%" h="80%">
-                                  <Image
-                                    src={
-                                      component.image
-                                        ? component.image
-                                        : "/Link.png"
-                                    }
-                                    h={component.image ? "80%" : "60%"}
-                                    objectFit={"cover"}
-                                  />
-                                </Center>
-                                <Center>
-                                  {component.link ? (
-                                    <>
-                                      <Text fontSize={"xl"} fontWeight={"bold"}>
-                                        {component.title == ""
-                                          ? component.link
-                                              .slice(
-                                                component.link.indexOf("//") + 2
-                                              )
-                                              .split("/")[0]
-                                          : component.title}
-                                      </Text>
-                                    </>
-                                  ) : (
-                                    <Text>Linkの設定がありません。</Text>
-                                  )}
-                                </Center>
-                              </>
-                            ) : null}
-                            {component.canvasmode == "File" ||
-                            component.canvasmode == "Article" ? (
-                              <>
-                                <Center w="100%" h="80%">
-                                  <Image
-                                    src={
-                                      component.image
-                                        ? component.image
-                                        : `/${component.canvasmode}.png`
-                                    }
-                                    h={component.image ? "80%" : "60%"}
-                                    objectFit={"cover"}
-                                  />
-                                </Center>
-                                <Center>
-                                  <Text fontSize={"xl"} fontWeight={"bold"}>
-                                    {component.title.length >
-                                    (Math.min(UNIT, windowCubeWidth) / 30) *
-                                      component.w *
-                                      component.h
-                                      ? component.title.slice(
-                                          0,
-                                          (Math.min(UNIT, windowCubeWidth) /
-                                            30) *
-                                            component.w *
-                                            component.h -
-                                            1
-                                        ) + "..."
-                                      : component.title}
-                                  </Text>
-                                </Center>
-                              </>
-                            ) : null}
-                          </Box>
-                        </Center>
-                      )}
-                    </Box>
-                  </Box>
+                    isLogin={isLogin}
+                    maxid={maxid}
+                  />
                 );
               })}
               {isLogin ? (
-                <>
-                  {onAddAction ? (
-                    <>
-                      <Box
-                        right={5}
-                        bottom={5}
-                        position={"fixed"}
-                        bgColor={"black"}
-                        zIndex={100}
-                        borderRadius={"xl"}
-                      >
-                        <HStack margin={7}>
-                          <Button
-                            onClick={() => {
-                              if (empty!.length != 0) {
-                                setComponents([
-                                  ...components,
-                                  {
-                                    id: maxid + 1,
-                                    title: "",
-                                    content: null,
-                                    image: null,
-                                    canvasmode: "Article",
-                                    link: null,
-                                    x: empty![0][0],
-                                    y: empty![0][1],
-                                    w: 1,
-                                    h: 1,
-                                  },
-                                ]);
-                                setMaxHeight(
-                                  maxHeight + Math.min(UNIT, windowCubeWidth)
-                                );
-                              } else {
-                                setComponents([
-                                  ...components,
-                                  {
-                                    id: maxid + 1,
-                                    title: "",
-                                    content: null,
-                                    image: null,
-                                    canvasmode: "Article",
-                                    link: null,
-                                    x: 0,
-                                    y:
-                                      maxHeight /
-                                      Math.min(UNIT, windowCubeWidth),
-                                    w: 1,
-                                    h: 1,
-                                  },
-                                ]);
-                              }
-                            }}
-                          >
-                            <Center>
-                              <VStack gap={0}>
-                                <Box
-                                  border={"1px solid white"}
-                                  borderRadius={"md"}
-                                  w={10}
-                                  h={10}
-                                ></Box>
-                                <Text color={"white"}>Cube</Text>
-                              </VStack>
-                            </Center>
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setComponents([
-                                ...components,
-                                {
-                                  id: maxid + 1,
-                                  title: "",
-                                  content: null,
-                                  image: null,
-                                  canvasmode: "Article",
-                                  link: null,
-                                  x: 0,
-                                  y:
-                                    maxHeight / Math.min(UNIT, windowCubeWidth),
-                                  w: 2,
-                                  h: 1,
-                                },
-                              ]);
-                            }}
-                          >
-                            <Center>
-                              <VStack gap={0}>
-                                <Box
-                                  border={"1px solid white"}
-                                  borderRadius={"md"}
-                                  w={20}
-                                  h={10}
-                                ></Box>
-                                <Text color={"white"}>Rectangle</Text>
-                              </VStack>
-                            </Center>
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              setComponents([
-                                ...components,
-                                {
-                                  id: maxid + 1,
-                                  title: "",
-                                  content: null,
-                                  image: null,
-                                  canvasmode: "Article",
-                                  link: null,
-                                  x: 0,
-                                  y:
-                                    maxHeight / Math.min(UNIT, windowCubeWidth),
-                                  w: 2,
-                                  h: 2,
-                                },
-                              ]);
-                            }}
-                          >
-                            <Center>
-                              <VStack gap={0}>
-                                <Box
-                                  border={"1px solid white"}
-                                  borderRadius={"md"}
-                                  w={14}
-                                  h={14}
-                                ></Box>
-                                <Text color={"white"}>Big Cube</Text>
-                              </VStack>
-                            </Center>
-                          </Button>
-                        </HStack>
-                        <Button
-                          size={"xs"}
-                          margin={1}
-                          onClick={() => setOnAddAction(false)}
-                          colorPalette={"blue"}
-                          variant={"subtle"}
-                        >
-                          キャンセル
-                        </Button>
-                      </Box>
-                    </>
-                  ) : (
-                    <Button
-                      right={5}
-                      bottom={5}
-                      position={"fixed"}
-                      bgColor={"black"}
-                      zIndex={100}
-                      borderRadius={"4xl"}
-                      onClick={() => setOnAddAction(true)}
-                    >
-                      <LuPlus />
-                    </Button>
-                  )}
-                </>
+                <AddButton
+                  empty={empty}
+                  maxid={maxid}
+                  UNIT={UNIT}
+                  windowCubeWidth={windowCubeWidth}
+                />
               ) : null}
             </Box>
             <Alert.Root
