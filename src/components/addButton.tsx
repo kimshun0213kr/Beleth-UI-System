@@ -34,39 +34,41 @@ export default function AddButton({
             <HStack margin={7}>
               <Button
                 onClick={() => {
-                  if (empty!.length != 0) {
-                    setComponents([
-                      ...components,
-                      {
-                        id: maxid + 1,
-                        title: "",
-                        content: null,
-                        image: null,
-                        canvasmode: "Article",
-                        link: null,
-                        x: empty![0][0],
-                        y: empty![0][1],
-                        w: 1,
-                        h: 1,
-                      },
-                    ]);
-                    setMaxHeight(maxHeight + Math.min(UNIT, windowCubeWidth));
-                  } else {
-                    setComponents([
-                      ...components,
-                      {
-                        id: maxid + 1,
-                        title: "",
-                        content: null,
-                        image: null,
-                        canvasmode: "Article",
-                        link: null,
-                        x: 0,
-                        y: maxHeight / Math.min(UNIT, windowCubeWidth),
-                        w: 1,
-                        h: 1,
-                      },
-                    ]);
+                  if (components) {
+                    if (empty!.length != 0) {
+                      setComponents([
+                        ...components,
+                        {
+                          id: maxid + 1,
+                          title: "",
+                          content: null,
+                          image: null,
+                          canvasmode: "Article",
+                          link: null,
+                          x: empty![0][0],
+                          y: empty![0][1],
+                          w: 1,
+                          h: 1,
+                        },
+                      ]);
+                      setMaxHeight(maxHeight + Math.min(UNIT, windowCubeWidth));
+                    } else {
+                      setComponents([
+                        ...components,
+                        {
+                          id: maxid + 1,
+                          title: "",
+                          content: null,
+                          image: null,
+                          canvasmode: "Article",
+                          link: null,
+                          x: 0,
+                          y: maxHeight / Math.min(UNIT, windowCubeWidth),
+                          w: 1,
+                          h: 1,
+                        },
+                      ]);
+                    }
                   }
                 }}
               >
@@ -84,21 +86,23 @@ export default function AddButton({
               </Button>
               <Button
                 onClick={() => {
-                  setComponents([
-                    ...components,
-                    {
-                      id: maxid + 1,
-                      title: "",
-                      content: null,
-                      image: null,
-                      canvasmode: "Article",
-                      link: null,
-                      x: 0,
-                      y: maxHeight / Math.min(UNIT, windowCubeWidth),
-                      w: 2,
-                      h: 1,
-                    },
-                  ]);
+                  if (components) {
+                    setComponents([
+                      ...components,
+                      {
+                        id: maxid + 1,
+                        title: "",
+                        content: null,
+                        image: null,
+                        canvasmode: "Article",
+                        link: null,
+                        x: 0,
+                        y: maxHeight / Math.min(UNIT, windowCubeWidth),
+                        w: 2,
+                        h: 1,
+                      },
+                    ]);
+                  }
                 }}
               >
                 <Center>
@@ -115,21 +119,23 @@ export default function AddButton({
               </Button>
               <Button
                 onClick={() => {
-                  setComponents([
-                    ...components,
-                    {
-                      id: maxid + 1,
-                      title: "",
-                      content: null,
-                      image: null,
-                      canvasmode: "Article",
-                      link: null,
-                      x: 0,
-                      y: maxHeight / Math.min(UNIT, windowCubeWidth),
-                      w: 2,
-                      h: 2,
-                    },
-                  ]);
+                  if (components) {
+                    setComponents([
+                      ...components,
+                      {
+                        id: maxid + 1,
+                        title: "",
+                        content: null,
+                        image: null,
+                        canvasmode: "Article",
+                        link: null,
+                        x: 0,
+                        y: maxHeight / Math.min(UNIT, windowCubeWidth),
+                        w: 2,
+                        h: 2,
+                      },
+                    ]);
+                  }
                 }}
               >
                 <Center>
